@@ -12,22 +12,21 @@ df$date <- as.Date(df$date, format="%Y-%m-%d")
 
 ## What is mean total number of steps taken per day?
 
-Let's aggregate the data by the date, noting that we are permitted to omit any
-NA's here
+To answer this question,s we will first aggregate the data by the date, noting that we are instructed to omit any intervals for which there is no recorded data.
 
 
 ```r
 stepsByDate <- aggregate(steps ~ date,df, FUN=sum, na.action=na.omit)
 ```
 
-Then, let's make the plot:
+A histogram of the total number of steps taken each day is:
 
 ```r
 hist(stepsByDate$steps, 
      xlab="Number of steps taken in the day", 
      ylab = "Number of days", 
      breaks=seq(from=0, to=25000, by=2500),
-     main="Histogram of Number of days with a given number of steps",
+     main="Total number of steps taken each day",
      col = "steelBlue")
 ```
 
@@ -42,50 +41,44 @@ stepsMedian <- median(stepsByDate$steps)
 The mean is 10766 steps per day, and the median is 10765 steps per day.
 
 ## What is the average daily activity pattern?
-Aggregate steps by interval
+We are asked to make a time series plot of the interval versus the average number of steps taken, averaged across the days. So, first we aggregate steps by interval, taking the mean over the days.
 
 
 ```r
-stepsByInterval <- aggregate(steps ~ interval,df, FUN=sum, na.action=na.omit)
+stepsByInterval <- aggregate(steps ~ interval,df, FUN=mean, na.action=na.omit)
 ```
 
-and then plot the required time series plot
-
+Then, we make the required plot
 
 ```r
 plot(stepsByInterval$interval, stepsByInterval$steps, 
-     type="l", col = "steelBlue")
+     type="l", col = "steelBlue",
+     xlab = "Interval (minutes)",
+     ylab = "Average number of steps",
+     main = "A time series plot of the interval versus 
+     the average number of steps taken, averaged across the days")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
-The five minute interval containing the most number of steps over all days is
 
 
 ```r
-stepsByInterval[which.max(stepsByInterval$steps),1]
+most_steps <- stepsByInterval[which.max(stepsByInterval$steps),1]
 ```
 
-```
-## [1] 835
-```
-
-
+The five minute interval containing the most number of steps over all days is
+835
 
 
 
 
 ## Imputing missing values
-The total number of missing values in the dataset is 
 
 ```r
-sum(is.na(df$steps))
+total_na <- sum(is.na(df$steps))
 ```
-
-```
-## [1] 2304
-```
-Let's replace the NAs with the mean of that interval over all other days. 
+The total number of missing values in the dataset is 2304. Let us now replace the NAs with the number of steps taken in that interval averaged (by the mean) over all other days. We call this dataset replaceNAs.
 
 ```r
 meanByInterval <- aggregate(steps ~ interval,df, FUN=mean, na.action=na.omit)
@@ -94,18 +87,19 @@ replaceNAs <- transform(df, steps=ifelse(is.na(df$steps),
                     meanByInterval$interval)], df$steps))
 ```
 
+We are now asked to repeat the problem above, so we first aggregate the steps by the date.
 
 ```r
 noNAsStepsByDate <- aggregate(steps ~ date, replaceNAs, FUN=sum)
 ```
-Then plot the histogram
+Then we plot the histogram
 
 ```r
 hist(noNAsStepsByDate$steps, 
      xlab="Number of steps taken in the day", 
      ylab = "Number of days", 
      breaks=seq(from=0, to=25000, by=2500),
-     main="Histogram of Number of days with a given number of steps, replacing 
+     main="Total number of steps taken each day, replacing 
      missing values with the mean for that time interval over all days",
      col="steelBlue")
 ```
@@ -121,7 +115,7 @@ noNAsStepsMedian <- median(noNAsStepsByDate$steps)
 The mean is 10766 steps per day, and the median is 10766 steps per day. By replacing missing values with the mean of the corresponding interval, the median steps per day shifts and becomes equal to the mean.
 
 ## Are there differences in activity patterns between weekdays and weekends?
-
+First, we add a new factor variable to the data set with the NAs replaced, that tells us whether a particular day is during the week or the weekend.
 
 ```r
 replaceNAs$weekday <- strftime(replaceNAs$date, format="%A")
@@ -129,15 +123,21 @@ replaceNAs$we <- ifelse(replaceNAs$weekday == "Saturday"|replaceNAs$weekday == "
 replaceNAs <- as.data.frame(unclass(replaceNAs))
 # makes the two character columns into factors
 ```
+We then aggreate the steps by interval, taking the mean over the days, and factoring in whether a particular day is in the week or weekend.
 
 ```r
 noNAsStepsByIntervalIsweekend <- aggregate(steps ~ interval + we, replaceNAs, mean)
 ```
-
+Then we make the required plot of the 5 minute interval versus the average number of steps taken, averaged over the weekend or weekday.
 
 ```r
 library(lattice)
-xyplot(noNAsStepsByIntervalIsweekend$steps ~ noNAsStepsByIntervalIsweekend$interval | noNAsStepsByIntervalIsweekend$we, layout=c(1,2), type="l", col="steelBlue")
+xyplot(noNAsStepsByIntervalIsweekend$steps ~ noNAsStepsByIntervalIsweekend$interval | noNAsStepsByIntervalIsweekend$we, layout=c(1,2), type="l", col="steelBlue",
+       xlab = "Interval (minutes)",
+       ylab = "Average number of steps",
+       main = "A time series plot of the interval versus 
+            the average number of steps taken, averaged across the weekdays and 
+            weekend days")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
