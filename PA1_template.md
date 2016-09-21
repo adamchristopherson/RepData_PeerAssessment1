@@ -12,7 +12,7 @@ df$date <- as.Date(df$date, format="%Y-%m-%d")
 
 ## What is mean total number of steps taken per day?
 
-To answer this question,s we will first aggregate the data by the date, noting that we are instructed to omit any intervals for which there is no recorded data.
+To answer this question, we will first aggregate the data by the date, noting that we are instructed to omit any intervals for which there is no recorded data.
 
 
 ```r
