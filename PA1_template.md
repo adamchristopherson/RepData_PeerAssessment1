@@ -136,7 +136,7 @@ xyplot(noNAsStepsByIntervalIsweekend$steps ~ noNAsStepsByIntervalIsweekend$inter
        xlab = "Interval (minutes)",
        ylab = "Average number of steps",
        main = "A time series plot of the interval versus 
-            the average number of steps taken, averaged across the weekdays and 
+            the average number of steps taken, averaged across the weekdays/ 
             weekend days")
 ```
 
